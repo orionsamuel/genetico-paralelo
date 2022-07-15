@@ -34,7 +34,7 @@ void functions::Simulation(int idIteration, string file){
     if(idIteration == 0){
         for(int i = 0; i < SIZE_POPULATION; i++){
             cout << "Executando a simulação no indivíduo " << i << " da iteração " << idIteration << endl;
-            system(Command("mpirun -np 4 flow ../Output/"+to_string(idIteration)+"/"+to_string(i)+"-"+file+".DATA >> out.txt"));
+            system(Command("mpirun -np "+to_string(N_CORES)+" flow ../Output/"+to_string(idIteration)+"/"+to_string(i)+"-"+file+".DATA >> out.txt"));
             system(Command("python3 ../Output/"+to_string(idIteration)+"/summaryplot.py WOPR:PROD WWPR:PROD WGPR:PROD ../Output/"+to_string(idIteration)+"/"+to_string(i)+"-"+file+".DATA >> out.txt"));
             system(Command("mv WOPR:PROD.txt ../Output/"+to_string(idIteration)+"/oleo/"+to_string(i)+".txt"));
             system(Command("mv WWPR:PROD.txt ../Output/"+to_string(idIteration)+"/agua/"+to_string(i)+".txt"));
@@ -51,7 +51,7 @@ void functions::Simulation(int idIteration, string file){
     }else{
         for(int i = SIZE_POPULATION; i < (SIZE_POPULATION + ((SIZE_POPULATION * CROSSOVER_RATE) / 100)); i++){
             cout << "Executando a simulação no indivíduo " << i << " da iteração " << idIteration << endl;
-            system(Command("mpirun -np 4 flow ../Output/"+to_string(idIteration)+"/"+to_string(i)+"-"+file+".DATA >> out.txt"));
+            system(Command("mpirun -np "+to_string(N_CORES)+" flow ../Output/"+to_string(idIteration)+"/"+to_string(i)+"-"+file+".DATA >> out.txt"));
             system(Command("python3 ../Output/"+to_string(idIteration)+"/summaryplot.py WOPR:PROD WWPR:PROD WGPR:PROD ../Output/"+to_string(idIteration)+"/"+to_string(i)+"-"+file+".DATA >> out.txt"));
             system(Command("mv WOPR:PROD.txt ../Output/"+to_string(idIteration)+"/oleo/"+to_string(i)+".txt"));
             system(Command("mv WWPR:PROD.txt ../Output/"+to_string(idIteration)+"/agua/"+to_string(i)+".txt"));
@@ -269,7 +269,7 @@ double functions::activationFunction(string waterOutputResult, string oilOutputR
     FitnessWater<<<1,size>>>(d_results, d_simulateResults, size, d_rank);
     cudaDeviceSynchronize();
 
-    cudaMemcpy(&rank_temp, &d_rank, sizeof(double), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&rank_temp, &d_rank, sizeof(double), cudaMemcpyDeviceToHost); 
 
     rank += rank_temp;
     rank *= WATER_WEIGHT;

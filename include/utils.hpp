@@ -9,7 +9,7 @@ const string simulationFile = "../Input/SPE1CASE1.DATA";
 const string fileName = "SPE1CASE1";
 
 
-#define SIZE_POPULATION 10
+#define SIZE_POPULATION 100
 #define N_GENERATIONS 10
 
 #define CROSSOVER_RATE 80
@@ -29,6 +29,8 @@ const string fileName = "SPE1CASE1";
 #define TOTAL_CELLS 300
 
 #define N_METRICS 3
+
+#define N_CORES 4
 
 struct individual{
     double porosity;
