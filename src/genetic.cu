@@ -59,6 +59,7 @@ void genetic_algorithm::FirstPopulation(){
 
     for(int i = 0; i < SIZE_POPULATION; i++){
         this->population[i].porosity = Rand_double(MIN_POROSITY, MAX_POROSITY);
+        #pragma omp parallel for
         for(int j = 0; j < N_PERMEABILITY; j++){
             this->population[i].permeability_x[j] = Rand_double(MIN_PERMEABILITY, MAX_PERMEABILITY);
             this->population[i].permeability_y[j] = Rand_double(MIN_PERMEABILITY, MAX_PERMEABILITY);
@@ -66,6 +67,7 @@ void genetic_algorithm::FirstPopulation(){
         }
     }
  
+    #pragma omp parallel for
     for(int i = 0; i < SIZE_POPULATION; i++){
         WriteSimulationFile(0, i, simulationFile, fileName, population);
     }
@@ -76,6 +78,7 @@ void genetic_algorithm::FirstPopulation(){
   
     WriteErrorFile(0, population);
 
+    #pragma omp parallel for
     for(int i = 0; i < SIZE_POPULATION; i++){
         WriteSimulationFile(0, i, simulationFile, fileName, population);
     }
@@ -87,10 +90,12 @@ void genetic_algorithm::OtherPopulations(int idIteration){
 
     CreateResultDir(idIteration);
 
+    #pragma omp parallel for
     for(int i = 0; i < SIZE_POPULATION; i++){
         system(Command("cp ../Output/"+to_string(idIteration-1)+"/"+to_string(i)+"-"+fileName+".DATA ../Output/"+to_string(idIteration)+"/"+to_string(i)+"-"+fileName+".DATA"));
     }
 
+    #pragma omp parallel for
     for(int i = SIZE_POPULATION; i < (SIZE_POPULATION + this->crossover_rate); i++){
         WriteSimulationFile(idIteration, i, simulationFile, fileName, population);
     }
@@ -103,10 +108,12 @@ void genetic_algorithm::OtherPopulations(int idIteration){
 
     system(Command("rm -f ../Output/"+to_string(idIteration)+"/*.DATA"));
 
+    #pragma omp parallel for
     for(int i = SIZE_POPULATION; i < (SIZE_POPULATION + this->crossover_rate); i++){
         this->population.pop_back();
     }
 
+    #pragma omp parallel for
     for(int i = 0; i < SIZE_POPULATION; i++){
         WriteSimulationFile(idIteration, i, simulationFile, fileName, population);
     }
@@ -115,6 +122,7 @@ void genetic_algorithm::OtherPopulations(int idIteration){
 
 void genetic_algorithm::Fitness(int idIteration){
     if(idIteration == 0){
+        #pragma omp parallel for
         for(int i = 0; i < SIZE_POPULATION; i++){
             string oilOutputResult = "../Output/"+to_string(idIteration)+"/oleo/"+to_string(i)+".txt";
             string waterOutputResult = "../Output/"+to_string(idIteration)+"/agua/"+to_string(i)+".txt";
@@ -122,6 +130,7 @@ void genetic_algorithm::Fitness(int idIteration){
             this->population[i].error_rank = activationFunction(waterOutputResult, oilOutputResult, gasOutputResult, realResults, idIteration, i);
         }
     }else{
+        #pragma omp parallel for
         for(int i = SIZE_POPULATION; i < (SIZE_POPULATION + this->crossover_rate); i++){
             string oilOutputResult = "../Output/"+to_string(idIteration)+"/oleo/"+to_string(i)+".txt";
             string waterOutputResult = "../Output/"+to_string(idIteration)+"/agua/"+to_string(i)+".txt";
@@ -150,6 +159,7 @@ void genetic_algorithm::Crossover(){
     for(int i = 0; i < crossover_rate; i++){
         this->children[i].porosity = 0;
         this->children[i].error_rank = 0;
+        #pragma omp parallel for
         for(int j = 0; j < N_PERMEABILITY; j++){
             this->children[i].permeability_x[j] = 0;
             this->children[i].permeability_y[j] = 0;
@@ -163,7 +173,7 @@ void genetic_algorithm::Crossover(){
         while(count < crossover_rate){
             this->children[count].porosity = this->population[count].porosity;
             this->children[count + 1].porosity = this->population[count + 1].porosity;
-
+            #pragma omp parallel for
             for(int i = 0; i < N_PERMEABILITY; i++){
                 this->children[count].permeability_x[i] = this->population[count + 1].permeability_x[i];
                 this->children[count].permeability_y[i] = this->population[count + 1].permeability_y[i];
@@ -180,6 +190,7 @@ void genetic_algorithm::Crossover(){
         while(count < crossover_rate){
             this->children[count].porosity = this->population[count].porosity;
             this->children[count + 1].porosity = this->population[count + 1].porosity;
+            #pragma omp parallel for
             for(int i = 0; i < N_PERMEABILITY; i++){
                 this->children[count].permeability_x[i] = this->population[count].permeability_x[i];
                 this->children[count].permeability_y[i] = this->population[count + 1].permeability_y[i];
@@ -197,13 +208,14 @@ void genetic_algorithm::Crossover(){
 
     for(int i = 0; i < crossover_rate; i++){
         this->children[i].porosity = floor(this->children[i].porosity * 100) / 100;
+        #pragma omp parallel for
         for(int j = 0; j < N_PERMEABILITY; j++){
             this->children[i].permeability_x[j] = floor(this->children[i].permeability_x[j] * 100) / 100;
             this->children[i].permeability_y[j] = floor(this->children[i].permeability_y[j] * 100) / 100;
             this->children[i].permeability_z[j] = floor(this->children[i].permeability_z[j] * 100) / 100;
         }
     }
-
+    
     for(int i = 0; i < this->crossover_rate; i++){
         this->population.push_back(children[i]);
     }

@@ -1,5 +1,5 @@
 NVCC=nvcc
-CUDA_FLAGS = -I include -arch=sm_37
+CUDA_FLAGS = -Xcompiler -fopenmp -I include -arch=sm_37
 EXECUTABLE = exec
 
 all: clean $(EXECUTABLE)

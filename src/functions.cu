@@ -1,5 +1,6 @@
 #include "../include/functions.hpp"
 #include "cuda_runtime.h"
+#include "omp.h"
 
 __global__ void FitnessWater(result *d_results, result *d_simulateResults, int N, double* d_rank){
     int i = threadIdx.x;
