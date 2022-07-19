@@ -1,14 +1,10 @@
 #include "../include/functions.hpp"
-#include "cuda_runtime.h"
-#include "omp.h"
 
 __global__ void FitnessWater(result *d_results, result *d_simulateResults, int N, double* d_rank){
     int i = threadIdx.x;
 
     if(i < N){
         *d_rank += pow((d_results[i].water - d_simulateResults[i].water),2);
-        *d_rank += pow((d_results[i].oil - d_simulateResults[i].oil),2);
-        *d_rank += pow((d_results[i].gas - d_simulateResults[i].gas),2);
     }
 }
 
@@ -270,7 +266,7 @@ double functions::activationFunction(string waterOutputResult, string oilOutputR
     FitnessWater<<<1,size>>>(d_results, d_simulateResults, size, d_rank);
     cudaDeviceSynchronize();
 
-    cudaMemcpy(&rank_temp, &d_rank, sizeof(double), cudaMemcpyDeviceToHost); 
+    cudaMemcpy(&rank_temp, d_rank, sizeof(double), cudaMemcpyDeviceToHost); 
 
     rank += rank_temp;
     rank *= WATER_WEIGHT;
@@ -283,6 +279,8 @@ double functions::activationFunction(string waterOutputResult, string oilOutputR
 
     cudaMemcpy(&rank_temp, d_rank, sizeof(double), cudaMemcpyDeviceToHost);
 
+    cout << "Rank Oil: " << rank_temp << endl;
+
     rank += rank_temp;
     rank *= OIL_WEIGHT;
 
@@ -292,7 +290,7 @@ double functions::activationFunction(string waterOutputResult, string oilOutputR
     FitnessGas<<<1,size>>>(d_results, d_simulateResults, size, d_rank);
     cudaDeviceSynchronize();
 
-    cudaMemcpy(&rank_temp, &d_rank, sizeof(double), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&rank_temp, d_rank, sizeof(double), cudaMemcpyDeviceToHost);
 
     rank += rank_temp;
     rank *= GAS_WEIGHT;
